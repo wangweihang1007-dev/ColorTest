@@ -40,7 +40,9 @@ const handleSelect = async (optionId) => {
   setTimeout(async () => {
     if (currentIndex.value < questions.value.length - 1) {
       currentIndex.value++
-      selectedOption.value = null
+      // Check if next question already has an answer (if user went back)
+      const nextAnswer = store.answers.find(a => a.q_id === questions.value[currentIndex.value].id)
+      selectedOption.value = nextAnswer ? nextAnswer.opt_id : null
     } else {
       // Submit results
       try {
@@ -56,6 +58,14 @@ const handleSelect = async (optionId) => {
       }
     }
   }, 300)
+}
+
+const handleBack = () => {
+  if (currentIndex.value > 0) {
+    currentIndex.value--
+    const prevAnswer = store.answers.find(a => a.q_id === questions.value[currentIndex.value].id)
+    selectedOption.value = prevAnswer ? prevAnswer.opt_id : null
+  }
 }
 </script>
 
@@ -78,8 +88,20 @@ const handleSelect = async (optionId) => {
     <div v-else-if="questions.length > 0" class="w-full max-w-2xl px-2 sm:px-0">
       <transition name="fade" mode="out-in">
         <div :key="currentIndex" class="bg-white rounded-2xl sm:rounded-3xl shadow-xl shadow-slate-200/60 p-6 md:p-12 border border-slate-100">
-          <div class="text-indigo-600 font-bold mb-4 tracking-widest uppercase text-sm">
-            Question {{ currentIndex + 1 }} / {{ questions.length }}
+          <div class="flex justify-between items-center mb-4">
+            <div class="text-indigo-600 font-bold tracking-widest uppercase text-sm">
+              Question {{ currentIndex + 1 }} / {{ questions.length }}
+            </div>
+            <button 
+              v-if="currentIndex > 0"
+              @click="handleBack"
+              class="text-slate-400 hover:text-indigo-600 text-sm font-bold flex items-center transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              上一题
+            </button>
           </div>
           
           <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-10 leading-tight">
