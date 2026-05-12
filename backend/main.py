@@ -46,11 +46,53 @@ if os.path.exists(frontend_path):
 async def health():
     return {"status": "healthy"}
 
-@app.get("/api/admin/records")
+from fastapi.responses import HTMLResponse
+
+@app.get("/api/admin/records", response_class=HTMLResponse)
 async def get_admin_records(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(TestRecord).order_by(TestRecord.created_at.desc()))
     records = result.scalars().all()
-    return records
+    
+    # Generate simple HTML table
+    rows = ""
+    for r in records:
+        rows += f"""
+        <tr class="border-b hover:bg-gray-50">
+            <td class="px-4 py-2">{r.id}</td>
+            <td class="px-4 py-2 font-bold">{r.final_color}</td>
+            <td class="px-4 py-2 text-sm text-gray-600">{r.score_detail}</td>
+            <td class="px-4 py-2 text-sm">{r.created_at}</td>
+        </tr>
+        """
+    
+    html_content = f"""
+    <html>
+        <head>
+            <title>ColorQA Admin - 测试记录</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+        </head>
+        <body class="bg-gray-100 p-8">
+            <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-md p-6">
+                <h1 class="text-2xl font-bold mb-6 text-gray-800">所有测试记录 ({len(records)})</h1>
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-800 text-white">
+                            <th class="px-4 py-2">ID</th>
+                            <th class="px-4 py-2">主色调</th>
+                            <th class="px-4 py-2">得分详情</th>
+                            <th class="px-4 py-2">时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows}
+                    </tbody>
+                </table>
+                { '<p class="text-center py-10 text-gray-400">暂无数据</p>' if not records else '' }
+            </div>
+        </body>
+    </html>
+    """
+    return html_content
 
 if __name__ == "__main__":
     import uvicorn
