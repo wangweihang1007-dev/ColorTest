@@ -11,7 +11,7 @@ const selectedOption = ref(null)
 const questions = ref([])
 const loading = ref(true)
 
-const API_BASE = "http://localhost:8000"
+const API_BASE = "/api"
 
 onMounted(async () => {
   try {

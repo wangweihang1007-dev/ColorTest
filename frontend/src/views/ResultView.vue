@@ -9,7 +9,7 @@ const store = useTestStore()
 const config = ref(null)
 const loading = ref(true)
 
-const API_BASE = "http://localhost:8000"
+const API_BASE = "/api"
 
 onMounted(async () => {
   if (!store.results) {
