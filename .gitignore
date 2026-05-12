@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+venv/
+env/
+__pycache__/
+*.py[cod]
+
+# Testing
+coverage/
+
+# Production
+dist/
+build/
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# Project specific
+backend/color_test.db
+.env
+.python-version
