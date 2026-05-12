@@ -8,6 +8,9 @@ from fastapi.responses import FileResponse
 # Ensure backend directory is in path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+from sqlalchemy import select
+from app.core.database import get_db
+from app.models.database import TestRecord
 from app.api import questions, records
 
 app = FastAPI(title="ColorQA API")
@@ -41,6 +44,12 @@ if os.path.exists(frontend_path):
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
+
+@app.get("/api/admin/records")
+async def get_admin_records(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(TestRecord).order_by(TestRecord.created_at.desc()))
+    records = result.scalars().all()
+    return records
 
 if __name__ == "__main__":
     import uvicorn
