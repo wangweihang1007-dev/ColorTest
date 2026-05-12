@@ -1,9 +1,10 @@
 import os
 import sys
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # Ensure backend directory is in path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
