@@ -1,4 +1,5 @@
 {
+  "version": 2,
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -8,8 +9,5 @@
       "source": "/(.*)",
       "destination": "/frontend/dist/$1"
     }
-  ],
-  "framework": "vite",
-  "installCommand": "npm install",
-  "buildCommand": "cd frontend && npm run build"
+  ]
 }

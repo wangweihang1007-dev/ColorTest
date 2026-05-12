@@ -1,5 +1,6 @@
 {
-  "name": "color-qa-monorepo",
+  "name": "color-qa",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "build": "cd frontend && npm install && npm run build",
