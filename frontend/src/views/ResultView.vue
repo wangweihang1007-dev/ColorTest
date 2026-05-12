@@ -4,10 +4,14 @@ import { useRouter } from 'vue-router'
 import { useTestStore } from '../stores/test'
 import axios from 'axios'
 
+import html2canvas from 'html2canvas'
+
 const router = useRouter()
 const store = useTestStore()
 const config = ref(null)
 const loading = ref(true)
+const reportRef = ref(null)
+const isSaving = ref(false)
 
 const API_BASE = "/api"
 
@@ -26,6 +30,29 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+const saveReport = async () => {
+  if (!reportRef.value) return
+  
+  isSaving.value = true
+  try {
+    const canvas = await html2canvas(reportRef.value, {
+      useCORS: true,
+      scale: 2, // Better quality
+      backgroundColor: '#f8fafc', // match slate-50
+    })
+    
+    const link = document.createElement('a')
+    link.download = `ColorQA_Report_${store.results.final_color}.png`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
+  } catch (err) {
+    console.error("Save failed:", err)
+    alert("保存失败，请尝试手动截屏")
+  } finally {
+    isSaving.value = false
+  }
+}
 
 const colorTheme = {
   red: { bg: 'bg-red-500', text: 'text-red-600', ring: 'ring-red-100', light: 'bg-red-50' },
@@ -56,7 +83,7 @@ const sections = computed(() => {
     </div>
 
     <div v-else-if="config" class="max-w-4xl mx-auto">
-      <div class="bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100 transition-all duration-700">
+      <div ref="reportRef" class="bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100 transition-all duration-700">
         <!-- Premium Header -->
         <div :class="['relative py-16 px-8 text-center text-white overflow-hidden', currentTheme.bg]">
           <div class="absolute inset-0 bg-black/10"></div>
@@ -149,9 +176,11 @@ const sections = computed(() => {
               再测一次
             </button>
             <button 
-              class="bg-white text-slate-700 border border-slate-200 font-bold py-4 px-12 rounded-full hover:bg-slate-50 transition-all"
+              @click="saveReport"
+              :disabled="isSaving"
+              class="bg-white text-slate-700 border border-slate-200 font-bold py-4 px-12 rounded-full hover:bg-slate-50 transition-all disabled:opacity-50"
             >
-              保存报告
+              {{ isSaving ? '正在生成...' : '保存报告' }}
             </button>
           </div>
         </div>
