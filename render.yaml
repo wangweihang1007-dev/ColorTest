@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: color-qa
+    runtime: python
+    buildCommand: "npm install --prefix frontend && npm run build --prefix frontend && pip install -r backend/requirements.txt"
+    startCommand: "python backend/main.py"
+    envVars:
+      - key: NODE_VERSION
+        value: 18.0.0
+      - key: PYTHON_VERSION
+        value: 3.10.0

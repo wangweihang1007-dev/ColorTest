@@ -1,5 +1,13 @@
+import os
+import sys
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+# Ensure backend directory is in path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from app.api import questions, records
 
 app = FastAPI(title="ColorQA API")
@@ -7,20 +15,35 @@ app = FastAPI(title="ColorQA API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5173", "http://127.0.0.1:5174"],
+    allow_origins=["*"], # Allow all for production or specify your Render URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include Routers
-app.include_router(questions.router)
-app.include_router(records.router)
+# Include Routers with /api prefix
+app.include_router(questions.router, prefix="/api")
+app.include_router(records.router, prefix="/api")
 
-@app.get("/")
-async def root():
-    return {"message": "Welcome to ColorQA API", "status": "running"}
+# Serve Frontend Static Files
+frontend_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "dist")
+
+if os.path.exists(frontend_path):
+    app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
+    
+    # Catch-all route for SPA (Vue Router)
+    @app.exception_handler(404)
+    async def not_found_handler(request, exc):
+        if not request.url.path.startswith("/api"):
+            return FileResponse(os.path.join(frontend_path, "index.html"))
+        return {"detail": "Not Found"}
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy"}
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Render provides PORT environment variable
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
